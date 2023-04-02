@@ -5,6 +5,7 @@ import com.example.mlbpredictor.model.Pitcher;
 import com.example.mlbpredictor.model.PitcherResultados;
 import com.example.mlbpredictor.model.request.ComparacionPitcherRequest;
 import com.example.mlbpredictor.model.response.PitcherResponse;
+import com.example.mlbpredictor.properties.MlbProperties;
 import com.example.mlbpredictor.service.ComparacionPitcherService;
 import com.example.mlbpredictor.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,9 +24,12 @@ public class ComparacionPitcherServiceImpl implements ComparacionPitcherService 
 
     private final Utils utils;
 
-    public ComparacionPitcherServiceImpl(BaseballReference baseballReference, Utils utils) {
+    private final MlbProperties mlbProperties;
+
+    public ComparacionPitcherServiceImpl(BaseballReference baseballReference, Utils utils, MlbProperties mlbProperties) {
         this.baseballReference = baseballReference;
         this.utils = utils;
+        this.mlbProperties = mlbProperties;
     }
 
     @Override
@@ -33,34 +37,28 @@ public class ComparacionPitcherServiceImpl implements ComparacionPitcherService 
 
         Document callPitcherLocal = baseballReference
                 .getHtml("https://www.baseball-reference.com/players/gl.fcgi?id="
-                        +comparacionPitcherRequest.getPitcherLocal()+"&t=p&year=2022");
+                        +comparacionPitcherRequest.getPitcherLocal()+"&t=p&year="+mlbProperties.getSeason());
         Document callPitcherVisitante = baseballReference
                 .getHtml("https://www.baseball-reference.com/players/gl.fcgi?id="
-                        +comparacionPitcherRequest.getPitcherVisitante()+"&t=p&year=2022");
+                        +comparacionPitcherRequest.getPitcherVisitante()+"&t=p&year="+mlbProperties.getSeason());
 
-        List<PitcherResultados> resultadosPitcherLocal = obtenerResultadosPitcher(callPitcherLocal);
-        Pitcher pitcherLocal = obtenerPitcherData(resultadosPitcherLocal);
-
-        List<PitcherResultados> resultadosPitcherVisitante = obtenerResultadosPitcher(callPitcherVisitante);
-        Pitcher pitcherVisitante = obtenerPitcherData(resultadosPitcherVisitante);
-
-        PitcherResponse pitcherResponseLocal = PitcherResponse.builder()
-                .nombre(resultadosPitcherLocal.get(0).getNombre())
-                .equipo(resultadosPitcherLocal.get(0).getEquipoPrincipal())
-                .pitcher(pitcherLocal)
-                .pitcherResultados(resultadosPitcherLocal)
-                .build();
-
-        PitcherResponse pitcherResponseVisitante = PitcherResponse.builder()
-                .nombre(resultadosPitcherVisitante.get(0).getNombre())
-                .equipo(resultadosPitcherVisitante.get(0).getEquipoPrincipal())
-                .pitcher(pitcherVisitante)
-                .pitcherResultados(resultadosPitcherVisitante)
-                .build();
-
-
-        return Arrays.asList(pitcherResponseLocal, pitcherResponseVisitante);
+        return Arrays.asList(responsePitcher(callPitcherLocal), responsePitcher(callPitcherVisitante));
     }
+
+    private PitcherResponse responsePitcher(Document pitcherData) {
+
+        List<PitcherResultados> resultadosPitcher = obtenerResultadosPitcher(pitcherData);
+        Pitcher pitcher= obtenerPitcherData(resultadosPitcher);
+
+        return PitcherResponse.builder()
+                .nombre(resultadosPitcher.get(0).getNombre())
+                .equipo(resultadosPitcher.get(0).getEquipoPrincipal())
+                .pitcher(pitcher)
+                .pitcherResultados(resultadosPitcher)
+                .build();
+
+    }
+
 
     private List<PitcherResultados> obtenerResultadosPitcher(Document call) {
 
@@ -84,7 +82,9 @@ public class ComparacionPitcherServiceImpl implements ComparacionPitcherService 
                 Map<String, String> pitcherMap = crearPitcherResultados(nombrePitcher, pitcherResultados);
                 resultados.add(partidosResultadosMapper(pitcherMap));
 
-                LocalDate fechaLimite = LocalDate.of(2023,12,31);
+                LocalDate fechaLimite = LocalDate.of(mlbProperties.getSeason(), mlbProperties.getLimitMonth(),
+                        mlbProperties.getLimitDay());
+
                     if (resultados.get(resultados.size()-1).getFecha().isAfter(fechaLimite) && !resultados.isEmpty()){
                         resultados.remove(resultados.size()-1);
                     }

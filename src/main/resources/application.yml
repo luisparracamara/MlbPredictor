@@ -5,3 +5,5 @@ scraping:
 
 mlb-properties:
   season: 2023
+  limitMonth: 12
+  limitDay: 31

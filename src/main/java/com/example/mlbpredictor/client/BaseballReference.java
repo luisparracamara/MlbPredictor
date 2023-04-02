@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class BaseballReference {
 
     public Document getHtml(String url) {
-        Document html = null;
+        Document html;
 
         try {
             html = Jsoup.connect(url).get();

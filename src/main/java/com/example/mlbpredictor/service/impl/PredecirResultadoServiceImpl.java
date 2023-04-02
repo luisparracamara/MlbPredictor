@@ -23,7 +23,8 @@ public class PredecirResultadoServiceImpl implements PredecirResultadoService {
 
     private final ComparacionPitcherService comparacionPitcherService;
 
-    public PredecirResultadoServiceImpl(ComparacionEquiposService comparacionEquiposService, ComparacionPitcherService comparacionPitcherService) {
+    public PredecirResultadoServiceImpl(ComparacionEquiposService comparacionEquiposService,
+                                        ComparacionPitcherService comparacionPitcherService) {
         this.comparacionEquiposService = comparacionEquiposService;
         this.comparacionPitcherService = comparacionPitcherService;
     }

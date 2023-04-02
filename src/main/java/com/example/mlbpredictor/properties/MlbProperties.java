@@ -9,6 +9,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class MlbProperties {
 
-    private String season;
+    private int season;
+
+    private int limitMonth;
+    private int limitDay;
 
 }

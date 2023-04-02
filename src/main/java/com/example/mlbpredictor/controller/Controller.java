@@ -33,7 +33,7 @@ public class Controller {
         this.predecirResultadoService = predecirResultadoService;
     }
 
-    @PostMapping("/dataTeam")
+    @PostMapping("/teamData")
     public ResponseEntity<List<EquipoResponse>> compararEquipos(@RequestBody ComparacionEquiposRequest equiposRequest) {
 
         List<EquipoResponse> response = comparacionEquiposService.compararEquipos(equiposRequest);
@@ -41,7 +41,7 @@ public class Controller {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/pitcherPrediction")
+    @PostMapping("/pitcherData")
     public ResponseEntity<List<PitcherResponse>> compararPitchers(@RequestBody ComparacionPitcherRequest comparacionPitcherRequest) {
 
         List<PitcherResponse> response = comparacionPitcherService.compararPitchers(comparacionPitcherRequest);

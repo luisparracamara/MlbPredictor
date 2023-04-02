@@ -1,5 +1,6 @@
 package com.example.mlbpredictor.utils;
 
+import com.example.mlbpredictor.properties.MlbProperties;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -8,6 +9,12 @@ import java.util.Map;
 
 @Component
 public class Utils {
+
+    private final MlbProperties mlbProperties;
+
+    public Utils(MlbProperties mlbProperties) {
+        this.mlbProperties = mlbProperties;
+    }
 
     public String resultadoFormato(String resultado) {
         if (resultado.length() > 1) {
@@ -45,7 +52,7 @@ public class Utils {
         meses.put("Nov", 11);
         meses.put("Dec", 12);
 
-        return LocalDate.of(2022, meses.get(fecha[0]), Integer.parseInt(fecha[1]));
+        return LocalDate.of(mlbProperties.getSeason(), meses.get(fecha[0]), Integer.parseInt(fecha[1]));
     }
 
 }
