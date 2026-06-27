@@ -1,9 +1,11 @@
 package com.example.mlbpredictor.utils;
 
 import com.example.mlbpredictor.properties.MlbProperties;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,6 +55,11 @@ public class Utils {
         meses.put("Dec", 12);
 
         return LocalDate.of(mlbProperties.getSeason(), meses.get(fecha[0]), Integer.parseInt(fecha[1]));
+    }
+
+    public LocalDate getDateToSearch(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        return LocalDate.parse(date, formatter);
     }
 
 }

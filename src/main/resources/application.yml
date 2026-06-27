@@ -1,9 +1,23 @@
 
 scraping:
-  year: 2023
+  #year: 2023
+  year: 2024
 
 
 mlb-properties:
-  season: 2023
+  season: 2025
+  #season: 2023
   limitMonth: 12
   limitDay: 31
+
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG   # Ajusta el paquete según tus clases
+    com.example.mlbpredictor.client: DEBUG
+    feign: DEBUG
+    feign.Request: DEBUG
+    feign.Response: DEBUG
+    feign.Logger: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n" # Opcional, para ajustar el formato

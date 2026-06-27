@@ -11,13 +11,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PrediccionResponse {
+public class GetAllResults {
 
-    private String equipoGanador;
-    private double puntajeGanador;
-    private String equipoPerdedor;
-    private double puntajePerdedor;
-    private String detalles;
+    private PrediccionResponse resultForecast;
+    private OfficialResult officialResult;
 
     @Override
     public String toString() {

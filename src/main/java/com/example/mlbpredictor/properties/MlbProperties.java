@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class MlbProperties {
 
     private int season;
-
     private int limitMonth;
     private int limitDay;
 

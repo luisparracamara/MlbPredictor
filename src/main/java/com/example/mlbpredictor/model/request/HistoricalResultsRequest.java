@@ -1,4 +1,4 @@
-package com.example.mlbpredictor.model.response;
+package com.example.mlbpredictor.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,17 +11,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PrediccionResponse {
+public class HistoricalResultsRequest {
 
-    private String equipoGanador;
-    private double puntajeGanador;
-    private String equipoPerdedor;
-    private double puntajePerdedor;
-    private String detalles;
+    private String limitDate;
 
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
     }
-
 }

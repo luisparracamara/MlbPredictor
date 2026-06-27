@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,4 +15,6 @@ public class ComparacionPitcherRequest {
 
     private String pitcherLocal;
     private String pitcherVisitante;
+    private LocalDate date;
+
 }

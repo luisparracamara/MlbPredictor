@@ -28,37 +28,34 @@ public class ComparacionEquiposServiceImpl implements ComparacionEquiposService 
 
     private final PartidosResultadosMapper partidoResultadosMapper;
 
-    private final MlbProperties mlbProperties;
-
     public ComparacionEquiposServiceImpl(BaseballReference baseballReference, Utils utils,
-            PartidosResultadosMapper partidoResultadosMapper, MlbProperties mlbProperties) {
+                                         PartidosResultadosMapper partidoResultadosMapper) {
         this.baseballReference = baseballReference;
         this.utils = utils;
         this.partidoResultadosMapper = partidoResultadosMapper;
-        this.mlbProperties = mlbProperties;
     }
 
     @Override
     public List<EquipoResponse> compararEquipos(ComparacionEquiposRequest equiposRequest) {
 
         Document equipoLocal = baseballReference.getHtml("https://www.baseball-reference.com/teams/"
-                +equiposRequest.getEquipoLocal().toUpperCase()+"/"+mlbProperties.getSeason()+"-schedule-scores.shtml");
+                + equiposRequest.getEquipoLocal().toUpperCase() + "/" + equiposRequest.getDate().getYear() + "-schedule-scores.shtml");
 
         Document equipoVisitante = baseballReference.getHtml("https://www.baseball-reference.com/teams/"
-                +equiposRequest.getEquipoVisitante().toUpperCase()+"/"+mlbProperties.getSeason()+"-schedule-scores.shtml");
+                + equiposRequest.getEquipoVisitante().toUpperCase() + "/" + equiposRequest.getDate().getYear() + "-schedule-scores.shtml");
 
-        responseEquipo(equipoLocal, equiposRequest.getEquipoLocal().toUpperCase());
-        responseEquipo(equipoVisitante, equiposRequest.getEquipoVisitante().toUpperCase());
+        responseEquipo(equipoLocal, equiposRequest.getEquipoLocal().toUpperCase(), equiposRequest.getDate());
+        responseEquipo(equipoVisitante, equiposRequest.getEquipoVisitante().toUpperCase(), equiposRequest.getDate());
 
         return Arrays.asList(
-                responseEquipo(equipoLocal, equiposRequest.getEquipoLocal()),
-                responseEquipo(equipoVisitante, equiposRequest.getEquipoVisitante())
+                responseEquipo(equipoLocal, equiposRequest.getEquipoLocal(), equiposRequest.getDate()),
+                responseEquipo(equipoVisitante, equiposRequest.getEquipoVisitante(), equiposRequest.getDate())
         );
     }
 
-    private EquipoResponse responseEquipo(Document equipoData, String nombreEquipo) {
+    private EquipoResponse responseEquipo(Document equipoData, String nombreEquipo, LocalDate date) {
 
-        List<PartidoResultados> partidoResultados = obtenerResultadosEquipo(equipoData);
+        List<PartidoResultados> partidoResultados = obtenerResultadosEquipo(equipoData, date);
         Equipo equipoResponse = calcularPartidosLocalVisitante(partidoResultados);
         Series series = obtenerDatosSeries(
                 partidoResultados, equipoResponse.getTotalVictorias(),
@@ -71,7 +68,7 @@ public class ComparacionEquiposServiceImpl implements ComparacionEquiposService 
                 .build();
     }
 
-    private List<PartidoResultados> obtenerResultadosEquipo(Document resultadosEquipo) {
+    private List<PartidoResultados> obtenerResultadosEquipo(Document resultadosEquipo, LocalDate date) {
 
         Elements resultados = resultadosEquipo.select("tbody").select("tr");
 
@@ -84,19 +81,19 @@ public class ComparacionEquiposServiceImpl implements ComparacionEquiposService 
             if (!partidos[0].equals("Gm#")) {
                 Map<String, String> resultadosMap = getResultadosMap(partidos);
 
-                if (resultadosMap.isEmpty()){break;}
+                if (resultadosMap.isEmpty()) {
+                    break;
+                }
 
                 partidoResultados.add(partidoResultadosMapper.partidosResultadosMapper(resultadosMap));
 
-                LocalDate fechaLimite = LocalDate.of(mlbProperties.getSeason(), mlbProperties.getLimitMonth(),
-                        mlbProperties.getLimitDay());
-                if (partidoResultados.get(partidoResultados.size()-1).getFecha().isAfter(fechaLimite)) {
-                    partidoResultados.remove(partidoResultados.size()-1);
-                    return partidoResultados;
+                if (partidoResultados.get(partidoResultados.size() - 1).getFecha().isAfter(date)) {
+                    partidoResultados.remove(partidoResultados.size() - 1);
                 }
             }
         }
 
+//        log.debug("[PartidoResultados {} ]", partidoResultados);
         return partidoResultados;
     }
 
@@ -105,11 +102,11 @@ public class ComparacionEquiposServiceImpl implements ComparacionEquiposService 
 
         Map<String, String> resultados = new HashMap<>();
 
-        if(partido[4].equals("preview")){
+        if (partido[4].equals("preview")) {
             return resultados;
         }
 
-        String fecha = (partido[2]+" "+partido[3]).replace(",", " ");
+        String fecha = (partido[2] + " " + partido[3]).replace(",", " ");
 
         resultados.put("numeroJuego", partido[0]);
         resultados.put("fecha", fecha);
@@ -126,7 +123,7 @@ public class ComparacionEquiposServiceImpl implements ComparacionEquiposService 
 
         if (partido[5].equals("boxscore")) {
             return crearResultadosMap(resultados, partido[6], partido[7], "local",
-                    utils.resultadoFormato(partido[8]), partido[9], partido[10] );
+                    utils.resultadoFormato(partido[8]), partido[9], partido[10]);
         }
 
         return crearResultadosMap(resultados, partido[5], partido[6], "local",
@@ -135,8 +132,8 @@ public class ComparacionEquiposServiceImpl implements ComparacionEquiposService 
 
 
     private Map<String, String> crearResultadosMap(Map<String, String> resultados, String equipoPrincipal,
-            String equipoOponente, String sede, String resultado, String carrerasRealizadas,
-            String carrerasPermitidas) {
+                                                   String equipoOponente, String sede, String resultado, String carrerasRealizadas,
+                                                   String carrerasPermitidas) {
 
         resultados.put("equipoPrincipal", equipoPrincipal);
         resultados.put("equipoOponente", equipoOponente);
@@ -156,7 +153,7 @@ public class ComparacionEquiposServiceImpl implements ComparacionEquiposService 
                 .count();
 
         long partidosPerdidos = partidoResultados.stream()
-                .filter(resultado ->  resultado.getResultado().equals("L"))
+                .filter(resultado -> resultado.getResultado().equals("L"))
                 .count();
 
         long partidosLocalGanados = partidoResultados.stream()
@@ -177,23 +174,23 @@ public class ComparacionEquiposServiceImpl implements ComparacionEquiposService 
 
         int totalSumaCarrerasRealizadas = partidoResultados.stream().mapToInt(PartidoResultados::getCarrerasRealizadas).sum();
 
-        int totalSumaCarrerasPermitidas= partidoResultados.stream().mapToInt(PartidoResultados::getCarrerasPermitidas).sum();
+        int totalSumaCarrerasPermitidas = partidoResultados.stream().mapToInt(PartidoResultados::getCarrerasPermitidas).sum();
 
         long partidoGanadoDiferenciaDeUno = partidoResultados.stream()
                 .filter(resultado -> resultado.getResultado().equals("W"))
-                .filter(resultado -> (resultado.getCarrerasRealizadas() - resultado.getCarrerasPermitidas()) == 1 )
+                .filter(resultado -> (resultado.getCarrerasRealizadas() - resultado.getCarrerasPermitidas()) == 1)
                 .count();
 
         return Equipo.builder()
-                .totalPartidos((int) (partidosGanados+partidosPerdidos))
-                .totalPartidosCasa((int) (partidosLocalGanados+partidosLocalPerdidos))
-                .totalPartidosVisitante((int) (partidosVisitantesGanados+partidosVisitantePerdidos))
-                .totalVictorias((int)partidosGanados)
-                .totalDerrotas((int)partidosPerdidos)
-                .totalDerrotasCasa((int)partidosLocalPerdidos)
-                .totalDerrotasVisitante((int)partidosVisitantePerdidos)
-                .totalVictoriasCasa((int)partidosLocalGanados)
-                .totalVictoriasVisitante((int)partidosVisitantesGanados)
+                .totalPartidos((int) (partidosGanados + partidosPerdidos))
+                .totalPartidosCasa((int) (partidosLocalGanados + partidosLocalPerdidos))
+                .totalPartidosVisitante((int) (partidosVisitantesGanados + partidosVisitantePerdidos))
+                .totalVictorias((int) partidosGanados)
+                .totalDerrotas((int) partidosPerdidos)
+                .totalDerrotasCasa((int) partidosLocalPerdidos)
+                .totalDerrotasVisitante((int) partidosVisitantePerdidos)
+                .totalVictoriasCasa((int) partidosLocalGanados)
+                .totalVictoriasVisitante((int) partidosVisitantesGanados)
                 .partidoResultados(partidoResultados)
                 .totalSumaCarrerasRealizadas(totalSumaCarrerasRealizadas)
                 .totalSumaCarrerasPermitidas(totalSumaCarrerasPermitidas)
@@ -207,9 +204,9 @@ public class ComparacionEquiposServiceImpl implements ComparacionEquiposService 
         String equipoActual = "";
         int contador = 0;
 
-        for (PartidoResultados resultado: partidoResultados) {
+        for (PartidoResultados resultado : partidoResultados) {
 
-            if (!equipoActual.equals(resultado.getEquipoOponente())){
+            if (!equipoActual.equals(resultado.getEquipoOponente())) {
                 equipoActual = resultado.getEquipoOponente();
                 contador++;
             }

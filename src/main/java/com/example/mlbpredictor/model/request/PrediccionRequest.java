@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,4 +17,6 @@ public class PrediccionRequest {
     private String equipoVisitante;
     private String pitcherLocal;
     private String pitcherVisitante;
+    private LocalDate date;
+
 }

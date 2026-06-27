@@ -6,5 +6,4 @@ import com.example.mlbpredictor.model.response.PrediccionResponse;
 public interface PredecirResultadoService {
 
     PrediccionResponse predecirResultado(PrediccionRequest prediccionRequest);
-
 }
